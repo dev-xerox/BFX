@@ -15,10 +15,10 @@
 
 ## 🧠 Поддерживаемые AI-провайдеры
 
-- **ChatGPT** (OpenAI) — `gpt-4o` и другие
-- **Claude** (Anthropic) — `claude-sonnet-4` и другие
-- **Gemini** (Google) — `gemini-2.5-pro` и другие
-- **Grok** (xAI) — `grok-3` и другие
+- **ChatGPT** (OpenAI) — `gpt-5.4` и другие
+- **Claude** (Anthropic) — `claude-opus-4-7` и другие
+- **Gemini** (Google) — `gemini-3-pro-preview` и другие
+- **Grok** (xAI) — Все модели
 
 ---
 
