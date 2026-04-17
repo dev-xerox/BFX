@@ -2,7 +2,7 @@
 """
 BFX — Мощный ИИ-агент
 Интерфейс в стиле Kiro (kiro.dev)
-Поддерживаемые провайдеры: ChatGPT, Claude, Gemini, Grok
+Поддерживаемые провайдеры: ChatGPT, Claude, Gemini, Grok, OpenRouter, DeepSeek, Groq, Nvidia, HuggingFace, GitHub
 Инструменты: Веб-Поиск, Терминал, Веб-Фетч, Firecrawl API
 """
 
@@ -40,23 +40,53 @@ load_dotenv()
 PROVIDERS = {
     "chatgpt": {
         "api_key": os.getenv("OPENAI_API_KEY", ""),
-        "model": os.getenv("OPENAI_MODEL", "gpt-4o"),
+        "model": os.getenv("OPENAI_MODEL", "gpt-5.4"),
         "endpoint": "https://api.openai.com/v1/chat/completions",
     },
     "claude": {
         "api_key": os.getenv("ANTHROPIC_API_KEY", ""),
-        "model": os.getenv("ANTHROPIC_MODEL", "claude-sonnet-4-20250514"),
+        "model": os.getenv("ANTHROPIC_MODEL", "claude-opus-4-7"),
         "endpoint": "https://api.anthropic.com/v1/messages",
     },
     "gemini": {
         "api_key": os.getenv("GOOGLE_API_KEY", ""),
-        "model": os.getenv("GOOGLE_MODEL", "gemini-2.5-pro"),
+        "model": os.getenv("GOOGLE_MODEL", "gemini-3-pro-preview"),
         "endpoint": "https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent",
     },
     "grok": {
         "api_key": os.getenv("XAI_API_KEY", ""),
         "model": os.getenv("XAI_MODEL", "grok-3"),
         "endpoint": "https://api.x.ai/v1/chat/completions",
+    },
+    "openrouter": {
+        "api_key": os.getenv("OPENROUTER_API_KEY", ""),
+        "model": os.getenv("OPENROUTER_MODEL", "openai/gpt-5.4"),
+        "endpoint": "https://openrouter.ai/api/v1/chat/completions",
+    },
+    "deepseek": {
+        "api_key": os.getenv("DEEPSEEK_API_KEY", ""),
+        "model": os.getenv("DEEPSEEK_MODEL", "deepseek-chat"),
+        "endpoint": "https://api.deepseek.com/v1/chat/completions",
+    },
+    "groq": {
+        "api_key": os.getenv("GROQ_API_KEY", ""),
+        "model": os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile"),
+        "endpoint": "https://api.groq.com/openai/v1/chat/completions",
+    },
+    "nvidia": {
+        "api_key": os.getenv("NVIDIA_API_KEY", ""),
+        "model": os.getenv("NVIDIA_MODEL", "meta/llama-3.1-405b-instruct"),
+        "endpoint": "https://integrate.api.nvidia.com/v1/chat/completions",
+    },
+    "huggingface": {
+        "api_key": os.getenv("HUGGINGFACE_API_KEY", ""),
+        "model": os.getenv("HUGGINGFACE_MODEL", "meta-llama/Llama-3.3-70B-Instruct"),
+        "endpoint": "https://api-inference.huggingface.co/models/{model}/v1/chat/completions",
+    },
+    "github": {
+        "api_key": os.getenv("GITHUB_TOKEN", ""),
+        "model": os.getenv("GITHUB_MODEL", "openai/gpt-5.4"),
+        "endpoint": "https://models.inference.ai.azure.com/chat/completions",
     },
 }
 
@@ -93,7 +123,7 @@ def print_help():
         table.add_column("Описание", style="white")
         table.add_row("/help", "Показать эту справку")
         table.add_row("/clear", "Очистить историю чата")
-        table.add_row("/provider <name>", "Сменить провайдера (chatgpt/claude/gemini/grok)")
+        table.add_row("/provider <name>", "Сменить провайдера (chatgpt/claude/gemini/grok/openrouter/deepseek/groq/nvidia/huggingface/github)")
         table.add_row("/model <name>", "Сменить модель")
         table.add_row("/search <query>", "Веб-поиск")
         table.add_row("/exec <command>", "Выполнить команду в терминале")
@@ -160,11 +190,10 @@ def web_fetch(url: str) -> str:
         headers = {"User-Agent": "BFX-AI-Agent/1.0"}
         response = requests.get(url, headers=headers, timeout=15)
         response.raise_for_status()
-        # Простая очистка HTML
         import re
         text = re.sub(r'<[^>]+>', ' ', response.text)
         text = re.sub(r'\s+', ' ', text).strip()
-        return text[:3000]  # Ограничиваем длину
+        return text[:3000]
     except Exception as e:
         return f"Ошибка загрузки: {e}"
 
@@ -188,8 +217,8 @@ def firecrawl_scrape(url: str) -> str:
         return f"Ошибка Firecrawl: {e}"
 
 # ─── AI Провайдеры ─────────────────────────────────────────────
-def call_chatgpt(messages: list, provider_config: dict) -> str:
-    """OpenAI ChatGPT"""
+def call_openai_compat(messages: list, provider_config: dict) -> str:
+    """Универсальный вызов для OpenAI-совместимых API"""
     response = requests.post(
         provider_config["endpoint"],
         headers={
@@ -208,7 +237,6 @@ def call_chatgpt(messages: list, provider_config: dict) -> str:
 
 def call_claude(messages: list, provider_config: dict) -> str:
     """Anthropic Claude"""
-    # Конвертируем формат сообщений для Claude
     system_msg = messages[0]["content"] if messages[0]["role"] == "system" else SYSTEM_PROMPT
     claude_messages = [m for m in messages if m["role"] != "system"]
     
@@ -232,7 +260,6 @@ def call_claude(messages: list, provider_config: dict) -> str:
 
 def call_gemini(messages: list, provider_config: dict) -> str:
     """Google Gemini"""
-    # Конвертируем сообщения в формат Gemini
     contents = []
     for msg in messages:
         if msg["role"] == "system":
@@ -249,10 +276,11 @@ def call_gemini(messages: list, provider_config: dict) -> str:
     data = response.json()
     return data["candidates"][0]["content"]["parts"][0]["text"]
 
-def call_grok(messages: list, provider_config: dict) -> str:
-    """xAI Grok"""
+def call_huggingface(messages: list, provider_config: dict) -> str:
+    """HuggingFace Inference API"""
+    endpoint = provider_config["endpoint"].format(model=provider_config["model"])
     response = requests.post(
-        provider_config["endpoint"],
+        endpoint,
         headers={
             "Authorization": f"Bearer {provider_config['api_key']}",
             "Content-Type": "application/json",
@@ -265,13 +293,23 @@ def call_grok(messages: list, provider_config: dict) -> str:
         timeout=60
     )
     data = response.json()
-    return data["choices"][0]["message"]["content"]
+    if isinstance(data, list) and len(data) > 0:
+        return data[0].get("generated_text", "")
+    if "choices" in data:
+        return data["choices"][0]["message"]["content"]
+    return str(data)
 
 PROVIDER_CALLERS = {
-    "chatgpt": call_chatgpt,
+    "chatgpt": call_openai_compat,
     "claude": call_claude,
     "gemini": call_gemini,
-    "grok": call_grok,
+    "grok": call_openai_compat,
+    "openrouter": call_openai_compat,
+    "deepseek": call_openai_compat,
+    "groq": call_openai_compat,
+    "nvidia": call_openai_compat,
+    "huggingface": call_huggingface,
+    "github": call_openai_compat,
 }
 
 # ─── Основной класс агента ─────────────────────────────────────
@@ -363,7 +401,6 @@ class BFXAgent:
                 if not user_input:
                     continue
                 
-                # Проверяем команды
                 if user_input.startswith("/"):
                     result = self.process_command(user_input)
                     if result == "QUIT":
@@ -377,7 +414,6 @@ class BFXAgent:
                             print(result)
                     continue
                 
-                # AI запрос
                 if HAS_RICH:
                     console = get_console()
                     with console.status("🤔 Думаю...", spinner="dots"):
@@ -397,7 +433,6 @@ class BFXAgent:
 
 # ─── Точка входа ────────────────────────────────────────────────
 def main():
-    # Проверка зависимостей
     missing = []
     try:
         import requests
