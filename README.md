@@ -19,6 +19,12 @@
 - **Claude** (Anthropic) — `claude-opus-4-7` и другие
 - **Gemini** (Google) — `gemini-3-pro-preview` и другие
 - **Grok** (xAI) — Все модели
+- **OpenRouter** — `openai/gpt-5.4`, `anthropic/claude-opus` и 100+ моделей
+- **DeepSeek** — `deepseek-chat` и другие
+- **Groq** — `llama-3.3-70b`, `mixtral-8x7b` и другие
+- **Nvidia** — `meta/llama-3.1-405b` и другие
+- **HuggingFace** — Любые модели с Inference API
+- **GitHub Models** — Бесплатный доступ к моделям OpenAI и другим
 
 ---
 
@@ -49,7 +55,7 @@ python bfx.py
 |---------|----------|
 | `/help` | Показать справку |
 | `/clear` | Очистить историю чата |
-| `/provider <name>` | Сменить провайдера (`chatgpt`/`claude`/`gemini`/`grok`) |
+| `/provider <name>` | Сменить провайдера |
 | `/model <name>` | Сменить модель |
 | `/search <query>` | Веб-поиск |
 | `/exec <command>` | Выполнить команду в терминале |
