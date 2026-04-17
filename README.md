@@ -1,2 +1,3 @@
 # BFX
-BFX project
+
+Мощный ИИ агент
