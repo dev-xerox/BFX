@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  mcub:
+    build:
+      context: .
+      network: host
+    container_name: mcub-fork
+    volumes:
+      - ./data:/app/data
+      - ./config.json:/app/config.json
+    stdin_open: true
+    tty: true
+    environment:
+      - MCUB_NO_WEB=0
+      - MCUB_PORT=8080
+      - MCUB_HOST=0.0.0.0
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
+    restart: unless-stopped
+    network_mode: host
