@@ -1,0 +1,33 @@
+# Ignore files not needed in the build context
+.git
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.log
+logs/
+.data/
+data/
+*.db
+*.sqlite
+*.sqlite3
+*.session
+*.session-journal
+.venv/
+.env
+.env.*
+.cache/
+modules_loaded/
+gemini_data/
+downloads/
+userbot.db
+.default_core
+# Test artefacts
+.pytest_cache/
+cover/
+htmlcov/
+# Editor/OS
+*.swp
+*.tmp
+.DS_Store
